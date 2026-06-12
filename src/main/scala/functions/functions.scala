@@ -1,7 +1,11 @@
 package functions
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.expressions.Window
-import org.apache.spark.sql.functions.{col, regexp_extract, regexp_replace, substring, sum}
-import org.apache.spark.sql.{DataFrame}
+import org.apache.spark.sql.functions.{col, regexp_extract, regexp_replace, substring, sum, when}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import variable.variable.{pokemonTCGSchema, pokemonUpdateSchema}
+
+
 
 object functions {
   /**
@@ -45,4 +49,52 @@ object functions {
       .drop(col("Peak"))
     clean
   }
+
+  def loadConcert(spark: SparkSession, pathConciertos: String): DataFrame = {
+    val dfConcierto = spark.read
+      .option("header", "true")
+      .option("encoding", "UTF-8")
+      .option("inferSchema", "true")
+      .csv(pathConciertos)
+
+    dfConcierto
+  }
+
+  def loadPokemon(spark:SparkSession,pathPokemonTCG:String,pathPokemonUpdate:String):(DataFrame, DataFrame)={
+
+    val dfPokemonUpdate = spark.read
+      .option("header", "true")
+      .schema(pokemonUpdateSchema)
+      .csv(pathPokemonUpdate)
+
+    val dfPokemonTCG = spark.read
+      .option("header", "true")
+      .option("multiLine", "true")
+      .option("escape", "\"")
+      .schema(pokemonTCGSchema)
+      .csv(pathPokemonTCG)
+
+    (dfPokemonUpdate,dfPokemonTCG)
+  }
+
+  def countRowColumn(dfPokemon: DataFrame): (Long, Int) = {
+
+    val filas = dfPokemon.count()
+    val columnas = dfPokemon.columns.length
+
+    (filas, columnas)
+  }
+
+  def columnNull(dfpokemonTcg: DataFrame): DataFrame = {
+
+    val nulos = dfpokemonTcg.select(
+      dfpokemonTcg.columns.map(c =>
+        sum(when(col(c).isNull, 1).otherwise(0)).alias(c)): _*
+    )
+
+    nulos
+  }
+
+
+
 }

@@ -1,4 +1,4 @@
-import model.Ejecutor
+import model.{Concert, Pokemon}
 import org.apache.spark.sql.SparkSession
 
 object Main {
@@ -16,7 +16,8 @@ object Main {
     println("===================================")
     println("Ejercicios Extra Spark Scala")
     println("===================================")
-    Ejecutor.execute(spark,inputPath)
+    //Concert.execute(spark,inputPath)
+    Pokemon.execute(spark, inputPath)
 
     spark.stop()
   }
